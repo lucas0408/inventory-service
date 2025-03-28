@@ -32,7 +32,7 @@ defmodule InventoryService.Stock do
   @impl GenServer
   def handle_call({:add_product, product}, _from, {name, stock}) do
     new_product = Map.put(stock.products, stock.auto_id, product)
-    new_state =  %Market.Stock{stock | products: new_product, auto_id: stock.auto_id + 1}
+    new_state =  %InventoryService.Stock{stock | products: new_product, auto_id: stock.auto_id + 1}
     Market.Database.store(name, new_state)
     {
       :reply,
@@ -44,7 +44,7 @@ defmodule InventoryService.Stock do
   @impl GenServer
   def handle_cast({:update_product, product_id, update_product}, {name, stock}) do
     updated_products = Map.replace(stock.products, product_id, update_product)
-    new_state = %Market.Stock{stock | products: updated_products}
+    new_state = %InventoryService.Stock{stock | products: updated_products}
     Market.Database.store(name, new_state)
     {
       :noreply,
@@ -55,7 +55,7 @@ defmodule InventoryService.Stock do
   @impl GenServer
     def handle_cast({:delete_product, product_id}, {name, stock}) do
     updated_products = Map.delete(stock.products, product_id)
-    new_state = %Market.Stock{stock | products: updated_products}
+    new_state = %InventoryService.Stock{stock | products: updated_products}
     Market.Database.store(name, new_state)
     {
       :noreply,
@@ -74,7 +74,7 @@ defmodule InventoryService.Stock do
 
   @impl GenServer
   def handle_call({:get_database, message}, _stock) do
-   {:reply, message, {market_name, Market.Database.get(market_name) || %Market.Stock{}}}
+   {:reply, message, {message["market_name"], %InventoryService.Stock{}}}
   end
 
   @impl GenServer
@@ -92,6 +92,6 @@ defmodule InventoryService.Stock do
       "get_all" ->
 
     end
-    {:noreply, {market_name, Market.Database.get(market_name) || %Market.Stock{}}}
+    {:noreply, %InventoryService.Stock{}}
   end
 end 

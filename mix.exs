@@ -9,11 +9,11 @@ defmodule InventoryService.MixProject do
       start_permanent: Mix.env() == :prod,
       deps: deps()
     ]
-  end
+    end
 
   def application do
     [
-      extra_applications: [:logger, :amqp, :ssl],
+      extra_applications: [:logger, :amqp, :postgrex, :ecto],
       mod: {InventoryService.Application, []}
     ]
   end
@@ -23,8 +23,10 @@ defmodule InventoryService.MixProject do
       {:amqp, "~> 4.0"},
       {:jason, "~> 1.4"},
       {:hackney, "~> 1.18.0"},
-      {:ssl_verify_fun, "~> 1.1"},
-      {:certifi, "~> 2.12.0"}  # Add this line
+      {:certifi, "~> 2.12.0"},
+      {:ecto, "~> 3.12.5"},
+      {:ecto_sql, "~> 3.2"},
+      {:postgrex, "~> 0.17"}
     ]
   end
 end
