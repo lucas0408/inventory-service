@@ -2,12 +2,21 @@ defmodule InventoryService.RabbitMQProducer do
     use GenServer
     use AMQP
 
+    @exchange    "default"
+    @options      options = [
+                host: "kebnekaise.lmq.cloudamqp.com",
+                port: 5672, 
+                virtual_host: "ymuldtjc",
+                username: "ymuldtjc",
+                password: "6V2cHoCicOdizdhzkSSmb7jVLQ2VEW72"
+            ]
+
     def start_link(chan) do
         GenServer.start(__MODULE__, chan, name: __MODULE__)
     end
 
     def publish(message) do
-        GenServer.handle_cast(__MODULE__, {:publish, message})
+        GenServer.cast(__MODULE__, {:publish, message})
     end
 
     @imp GenServer
@@ -26,11 +35,12 @@ defmodule InventoryService.RabbitMQProducer do
         {:ok, conn} = Connection.open(@options)
         {:ok, chan} = Channel.open(conn)
 
-        # Converte mensagem para JSON
         payload = Jason.encode!(message)
 
+        IO.inspect(payload)
+
         # Publica a mensagem no exchange
-        Basic.publish(chan, @exchange, "", payload)
+        Basic.publish(chan, @exchange, "", "payload")
         {:noreply, chan}
     end
 end

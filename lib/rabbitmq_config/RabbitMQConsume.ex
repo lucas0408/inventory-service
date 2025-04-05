@@ -8,7 +8,6 @@ defmodule InventoryService.RabbitMQConsume do
 
     @impl GenServer
     def init(chan) do
-        IO.inspect("oii")
         {:ok, chan}
     end
 
@@ -16,8 +15,10 @@ defmodule InventoryService.RabbitMQConsume do
   def handle_info({:basic_deliver, payload, meta}, chan) do
     try do
       message = Jason.decode!(payload)
-      
+
       IO.inspect(message)
+
+      InventoryService.Cache.decide_server_pid(message)
 
       Basic.ack(chan, meta.delivery_tag)
     catch

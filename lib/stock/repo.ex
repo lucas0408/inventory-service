@@ -1,4 +1,4 @@
-defmodule Stock.Repo do
+defmodule InventoryService.Repo do
   use Ecto.Repo,
     otp_app: :inventory_service,
     adapter: Ecto.Adapters.Postgres
