@@ -5,35 +5,29 @@ defmodule InventoryService.Database do
         GenServer.start(__MODULE__, nil, name: __MODULE__)
     end
 
-    def get(market_id, product_id) do
-        market_id
-        |> chose_worker()
-        |> InventoryService.DatabaseWorker.get(product_id)
-    end
-
-    def create(market_id, product) do
-        market_id
+    def create(product, product_id) do
+        product_id
         |> chose_worker()
         |> InventoryService.DatabaseWorker.create(product)
     end
 
     
-    def get_all(market_id) do
-        market_id
+    def get_all(random) do
+        random
         |> chose_worker()
         |> InventoryService.DatabaseWorker.get_all()
     end
 
-    def update(market_id, update_product, product_id) do
-        market_id
+    def update(update_product, product_id) do
+        product_id
         |> chose_worker()
-        |> InventoryService.DatabaseWorker.update(update_product, market_id)
+        |> InventoryService.DatabaseWorker.update(update_product, product_id)
     end
 
-    def delete(market_id, product_id) do
-        market_id
+    def delete(product_id) do
+        product_id
         |> chose_worker()
-        |> InventoryService.DatabaseWorker.delete(market_id)
+        |> InventoryService.DatabaseWorker.delete(product_id)
     end
 
     defp chose_worker(market_id) do
@@ -42,7 +36,7 @@ defmodule InventoryService.Database do
 
     @impl GenServer
     def init(table_name) do
-        {:ok, gen_workers()}
+        {:ok, gen_workers(table_name)}
     end
 
     @impl GenServer
@@ -52,9 +46,9 @@ defmodule InventoryService.Database do
     end
 
 
-    defp gen_workers do
+    defp gen_workers(table_name) do
         for index <- 1..3, into: %{} do
-            {:ok, pid} = InventoryService.DatabaseWorker.start("stocks")
+            {:ok, pid} = InventoryService.DatabaseWorker.start(table_name)
             {index - 1, pid}
         end
     end

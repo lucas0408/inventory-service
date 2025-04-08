@@ -14,9 +14,8 @@ defmodule InventoryService.RabbitMQConsume do
    @impl true
   def handle_info({:basic_deliver, payload, meta}, chan) do
     try do
-      message = Jason.decode!(payload)
 
-      IO.inspect(message)
+      message = Jason.decode(payload)
 
       InventoryService.Cache.decide_server_pid(message)
 
@@ -31,7 +30,6 @@ defmodule InventoryService.RabbitMQConsume do
 
   # Confirmation sent by the broker after registering this process as a consumer
   def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, chan) do
-    IO.inspect(consumer_tag)
     {:noreply, chan}
   end
 

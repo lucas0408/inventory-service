@@ -1,22 +1,17 @@
 defmodule InventoryService.DatabaseWorker do
   use GenServer
   alias InventoryService.Repo
-  import Ecto.Query
 
   def start(table_name) do
     GenServer.start(__MODULE__, table_name)
-  end
-
-  def get(worker_pid, id) do
-    GenServer.call(worker_pid, {:get, id})
   end
 
   def get_all(worker_pid) do
     GenServer.call(worker_pid, {:get_all})
   end
 
-  def update(worker_pid, update_product, id) do
-    GenServer.cast(worker_pid, {:update, update_product, id})
+  def update(worker_pid, update_product, product_id) do
+    GenServer.cast(worker_pid, {:update, update_product, product_id})
   end
 
   def create(worker_pid, product) do
@@ -30,15 +25,6 @@ defmodule InventoryService.DatabaseWorker do
   @impl GenServer
   def init(table_name) do
     {:ok, table_name}
-  end
-
-  @impl GenServer
-  def handle_call({:get, id}, _from, table_name) do
-    query = "SELECT * FROM #{table_name} WHERE id = $1"
-    result = Ecto.Adapters.SQL.query!(Repo, query, [id])
-    |> format_result()
-    
-    {:reply, result, table_name}
   end
 
   @impl GenServer
@@ -84,7 +70,6 @@ defmodule InventoryService.DatabaseWorker do
     {:noreply, table_name}
   end
 
-  # Função auxiliar para formatar o resultado da consulta SQL
   defp format_result(%{columns: columns, rows: rows}) do
     column_atoms = Enum.map(columns, &String.to_atom/1)
     

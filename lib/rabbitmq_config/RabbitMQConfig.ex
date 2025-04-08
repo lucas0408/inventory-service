@@ -5,7 +5,7 @@ defmodule InventoryService.RabbitMQConfig do
   @exchange    "default"
   @queue       "default.product"
   @queue       "default.product"
-  @options      options = [
+  @options      [
                   host: "kebnekaise.lmq.cloudamqp.com",
                   port: 5672, 
                   virtual_host: "ymuldtjc",
@@ -32,7 +32,7 @@ defmodule InventoryService.RabbitMQConfig do
 
     {:ok, consumer_pid} = InventoryService.RabbitMQConsume.start_link(chan)
 
-    {:ok, producer_pid} = InventoryService.RabbitMQProducer.start_link(chan)
+    {:ok, _producer_pid} = InventoryService.RabbitMQProducer.start_link(chan)
 
     #Binda a fila com o exchange
     :ok = Queue.bind(chan, @queue, @exchange)

@@ -14,9 +14,4 @@ defmodule InventoryService.Application do
     Supervisor.start_link(children, opts)
   end
 
-    @impl true
-  def init(_args) do
-    # Required by Supervisor behavior
-    {:ok, nil}
-  end
 end

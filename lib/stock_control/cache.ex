@@ -16,19 +16,39 @@ defmodule InventoryService.Cache do
 
     @impl GenServer
     def handle_cast({:decide_server_pid, message}, cache) do
-        case HashDict.fetch(cache, message["market_id"]) do
-            {:ok, pid_process} ->
-                send(pid_process, {:decide_process, message})
-                {
-                    :noreply,
-                    cache
-                }
-            :error ->
-                {:ok, pid_process} = InventoryService.Stock.start(message)
-                {
-                    :noreply,
-                    HashDict.put(cache, message["market_id"], pid_process)
-                }
+        case message["product_id"] do
+            product_id ->
+                case HashDict.fetch(cache, product_id) do
+                    {:ok, pid_process} ->
+                        send(pid_process, {:decide_process, message})
+                        {
+                            :noreply,
+                            cache
+                        }
+                    :error ->
+                        {:ok, pid_process} = InventoryService.Stock.start(message)
+                        {
+                            :noreply,
+                            HashDict.put(cache, product_id, pid_process)
+                        }
+                end
+            nil ->
+                {:ok, _pid_process} = InventoryService.Stock.start(message)
+                    {
+                        :noreply,
+                        cache
+                    }
         end
     end
+
+    @impl GenServer
+    def handle_info({:product_created, pid_process, product_id}, cache) do
+        {
+            :noreply,
+            HashDict.put(cache, product_id, pid_process)
+        }
+    end
+
+
+
 end
