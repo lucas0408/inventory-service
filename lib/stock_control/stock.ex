@@ -118,6 +118,7 @@ defmodule InventoryService.Stock do
 
   @impl GenServer
   def handle_info({:decide_process, message}, stock) do
+    {:ok, _message} = Genserver.call(self(), {:get_database, message})
     case message["process"] do
       "update" ->
         GenServer.cast(self(), {:update_product, message["product_id"], message["update_product"]})

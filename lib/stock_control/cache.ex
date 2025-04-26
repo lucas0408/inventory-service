@@ -51,6 +51,4 @@ defmodule InventoryService.Cache do
         }
     end
 
-
-
 end
