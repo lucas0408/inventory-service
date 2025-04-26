@@ -82,7 +82,7 @@ defmodule InventoryService.Stock do
   end
 
   @impl GenServer
-  def handle_cast({:get_all}, stock) do
+  def handle_cast({:get_all, message}, stock) do
     InventoryService.RabbitMQProducer.publish(message.meta, stock.products)
     {
       :noreply,
