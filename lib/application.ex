@@ -4,6 +4,9 @@ defmodule InventoryService.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      InventoryService.Repo,
+      {InventoryService.Database, "stocks"},
+      {InventoryService.Cache, []},
       {InventoryService.RabbitMQConfig, []}
     ]
 
