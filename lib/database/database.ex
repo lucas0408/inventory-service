@@ -36,7 +36,6 @@ defmodule InventoryService.Database do
 
     @impl GenServer
     def init(table_name) do
-        IO.inspect(table_name)
         {:ok, gen_workers(table_name)}
     end
 

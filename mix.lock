@@ -22,3 +22,4 @@
   "thoas": {:hex, :thoas, "1.2.1", "19a25f31177a17e74004d4840f66d791d4298c5738790fa2cc73731eb911f195", [:rebar3], [], "hexpm", "e38697edffd6e91bd12cea41b155115282630075c2a727e7a6b2947f5408b86a"},
   "unicode_util_compat": {:hex, :unicode_util_compat, "0.7.0", "bc84380c9ab48177092f43ac89e4dfa2c6d62b40b8bd132b1059ecc7232f9a78", [:rebar3], [], "hexpm", "25eee6d67df61960cf6a794239566599b09e17e668d3700247bc498638152521"},
 }
+

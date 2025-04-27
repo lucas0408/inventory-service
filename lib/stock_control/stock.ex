@@ -3,10 +3,33 @@ defmodule InventoryService.Stock do
 
   defstruct auto_id: 1, products: %{}
 
+  # Funções cliente para interação com o GenServer
+  def add_product(pid, product) do
+    GenServer.call(pid, {:add_product, product})
+  end
+
+  def update_product(pid, product_id, update_product) do
+    GenServer.cast(pid, {:update_product, product_id, update_product})
+  end
+
+  def delete_product(pid, product_id) do
+    GenServer.cast(pid, {:delete_product, product_id})
+  end
+
+  def buy_product(pid, product_id, quantity) do
+    GenServer.cast(pid, {:buy_product, product_id, quantity})
+  end
+
+  def get_all(pid, message) do
+    GenServer.cast(pid, {:get_all, message})
+  end
+
+  # Função para formatar valores
   defp format_value(%Decimal{} = value), do: Decimal.to_string(value)
   defp format_value(%Date{} = date), do: Date.to_string(date)
   defp format_value(value), do: value
 
+  # Inicialização do GenServer
   def start(message) do
     GenServer.start(__MODULE__, message)
   end
@@ -17,9 +40,11 @@ defmodule InventoryService.Stock do
     {:ok, nil}
   end
 
+  # Callbacks do GenServer (handle_call, handle_cast, handle_info)
   @impl GenServer
   def handle_call({:add_product, product}, _from, stock) do
     new_product = Map.put(stock.products, stock.auto_id, product)
+    send(InventoryService.Cache, {:product_created, self(), stock.auto_id})
     new_state =  %InventoryService.Stock{stock | products: new_product, auto_id: stock.auto_id + 1}
     product_key_atom = for {key, val} <- product, into: %{}, do: {String.to_atom(key), val}
     InventoryService.Database.create(stock.auto_id, Map.put(product_key_atom, :id, stock.auto_id))
@@ -34,7 +59,6 @@ defmodule InventoryService.Stock do
   def handle_cast({:update_product, product_id, update_product}, stock) do
     updated_products = Map.replace(stock.products, product_id, update_product)
     new_state = %InventoryService.Stock{stock | products: updated_products}
-
     product_key_atom = for {key, val} <- update_product, into: %{} do
       if is_binary(key) do
         {String.to_atom(key), val}
@@ -51,7 +75,7 @@ defmodule InventoryService.Stock do
   end
 
   @impl GenServer
-    def handle_cast({:delete_product, product_id}, stock) do
+  def handle_cast({:delete_product, product_id}, stock) do
     updated_products = Map.delete(stock.products, product_id)
     new_state = %InventoryService.Stock{stock | products: updated_products}
     InventoryService.Database.delete(product_id)
@@ -73,7 +97,7 @@ defmodule InventoryService.Stock do
 
       _ ->
         update_product = product.quantity - quantity
-        GenServer.cast(self(), {:update_product, product_id, update_product})
+        update_product(self(), product_id, update_product)
     end 
     {
       :noreply,
@@ -83,7 +107,7 @@ defmodule InventoryService.Stock do
 
   @impl GenServer
   def handle_cast({:get_all, message}, stock) do
-    InventoryService.RabbitMQProducer.publish(message.meta, stock.products)
+    InventoryService.RabbitMQProducer.publish(message["meta"], stock.products)
     {
       :noreply,
       stock
@@ -110,28 +134,36 @@ defmodule InventoryService.Stock do
       |> Enum.max()
       |> Kernel.+(1)
 
-      
-    send(self(), {:decide_process, message})
+    {:noreply, %InventoryService.Stock{auto_id: next_id, products: products_map}}
+  end
 
-   {:noreply, %InventoryService.Stock{auto_id: next_id, products: products_map}}
+  @impl true
+  def handle_info(:timeout, stock) do
+    send(InventoryService.Cache, {:product_created, self(), stock.auto_id})
+    {:stop, :normal, stock}
   end
 
   @impl GenServer
   def handle_info({:decide_process, message}, stock) do
-    {:ok, _message} = Genserver.call(self(), {:get_database, message})
     case message["process"] do
       "update" ->
-        GenServer.cast(self(), {:update_product, message["product_id"], message["update_product"]})
+        update_product(self(), message["product_id"], message["update_product"])
+      
       "delete" ->
-        GenServer.cast(self(), {:delete_product, message["product_id"]})
+        delete_product(self(), message["product_id"])
+      
       "add" ->
-        product_id = GenServer.call(self(), {:add_product, message["product"]})
+        IO.inspect("eu passei por aqui")
+        product_id = add_product(self(), message["product"])
         send(InventoryService.Cache, {:product_created, self(), product_id})
+      
       "buy_product" ->
-        GenServer.cast(self(), {:buy_product, message["product_id"], message["quantity"]})
+        buy_product(self(), message["product_id"], message["quantity"])
+      
       "get_all" ->
-        GenServer.cast(self(), {:get_all, message})
+        get_all(self(), message)
     end
+    
     {:noreply, stock}
   end
-end 
+end

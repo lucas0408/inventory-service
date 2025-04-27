@@ -1,33 +1,34 @@
 defmodule InventoryService.RabbitMQConsume do
-    use GenServer
-    use AMQP
+  use GenServer
+  use AMQP
 
-    def start_link(chan) do
-        GenServer.start(__MODULE__, chan, name: __MODULE__)
-    end
+  def start_link(chan) do
+      GenServer.start(__MODULE__, chan, name: __MODULE__)
+  end
 
-    @impl GenServer
-    def init(chan) do
-        IO.inspect("oii")
-        {:ok, chan}
-    end
+  @impl GenServer
+  def init(chan) do
+      IO.inspect("oii")
+      {:ok, chan}
+  end
 
-   @impl true
+  @impl true
   def handle_info({:basic_deliver, payload, meta}, chan) do
     try do
-
-      IO.inspect(payload)
-
-      message = Jason.decode(payload)
-
-      InventoryService.Cache.decide_server_pid(%{message | meta: meta})
-
-      Basic.ack(chan, meta.delivery_tag)
+      case Jason.decode(payload) do
+        {:ok, message} ->
+          InventoryService.Cache.decide_server_pid(Map.put(message, "meta", meta))
+          Basic.ack(chan, meta.delivery_tag)
+        {:error, error} ->
+          IO.inspect(error, label: "JSON decode error")
+          Basic.reject(chan, meta.delivery_tag, requeue: false)
+      end
     catch
-      _ ->
+      error ->
+        IO.inspect(error, label: "Error caught")
         Basic.reject(chan, meta.delivery_tag, requeue: false)
     end
-
+    
     {:noreply, chan}
   end
 
