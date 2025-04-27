@@ -5,8 +5,8 @@ defmodule InventoryService.Database do
         GenServer.start(__MODULE__, table_name, name: __MODULE__)
     end
 
-    def create(product, product_id) do
-        product_id
+    def create(product) do
+        product.product_name
         |> chose_worker()
         |> InventoryService.DatabaseWorker.create(product)
     end

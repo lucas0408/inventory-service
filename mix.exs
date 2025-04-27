@@ -13,7 +13,7 @@ defmodule InventoryService.MixProject do
 
   def application do
     [
-      extra_applications: [:logger, :amqp, :postgrex, :ecto],
+      extra_applications: [:logger, :amqp, :postgrex, :ecto, :ecto_sql],
       mod: {InventoryService.Application, []}
     ]
   end
@@ -25,9 +25,9 @@ defmodule InventoryService.MixProject do
       {:hackney, "~> 1.18.0"},
       {:certifi, "~> 2.12.0"},
       {:ecto, "~> 3.12.5"},
-      {:ecto_sql, "~> 3.2"},
       {:postgrex, "~> 0.17"},
-      {:poolboy, "~> 1.5.1"}
+      {:poolboy, "~> 1.5.1"},
+      {:ecto_sql, "~> 3.10"}
     ]
   end
 end

@@ -30,22 +30,35 @@ defmodule InventoryService.DatabaseWorker do
   @impl GenServer
   def handle_call({:get_all}, _from, table_name) do
     query = "SELECT * FROM #{table_name}"
-    result = Ecto.Adapters.SQL.query!(Repo, query, [])
-    |> format_result()
-    
-    {:reply, result, table_name}
+    case Ecto.Adapters.SQL.query(Repo, query, []) do
+      {:ok, result} ->
+        IO.inspect(Enum.map(result.rows, fn row -> transform_row(row) end))
+
+      {:error, reason} ->
+        IO.inspect("Erro ao executar query get_all: #{inspect(reason)}")
+        {:reply, {:error, "Erro ao buscar registros."}, table_name}
+    end
   end
 
   @impl GenServer
   def handle_cast({:create, product}, table_name) do
+    {:ok, expiration_date} = Date.from_iso8601(product.expiration_date)
+    product = %{product | expiration_date: expiration_date}
     columns = Map.keys(product) |> Enum.join(", ")
     placeholders = 1..map_size(product) |> Enum.map(&"$#{&1}") |> Enum.join(", ")
     values = Map.values(product)
+
+    IO.inspect(columns)
+    IO.inspect(placeholders)
+    IO.inspect(values)
     
     query = "INSERT INTO #{table_name} (#{columns}, inserted_at, updated_at) VALUES (#{placeholders}, NOW(), NOW())"
-    Ecto.Adapters.SQL.query!(Repo, query, values)
-    
-    {:noreply, table_name}
+
+    case Ecto.Adapters.SQL.query(Repo, query, values) do
+      {:ok, result} -> IO.inspect(result)
+      {:error, reason} ->
+        IO.inspect(reason)
+    end
   end
 
   @impl GenServer
@@ -56,18 +69,25 @@ defmodule InventoryService.DatabaseWorker do
     
     set_clause = Enum.join(columns, ", ")
     query = "UPDATE #{table_name} SET #{set_clause}, updated_at = NOW() WHERE id = $#{length(values) + 1}"
-    
-    Ecto.Adapters.SQL.query!(Repo, query, values ++ [id])
-    
-    {:noreply, table_name}
+
+    case Ecto.Adapters.SQL.query(Repo, query, values ++ [id]) do
+      {:ok, _result} -> {:noreply, table_name}
+      {:error, reason} ->
+        Logger.error("Erro ao executar query update: #{inspect(reason)}")
+        {:noreply, table_name}
+    end
   end
 
   @impl GenServer
   def handle_cast({:delete, id}, table_name) do
     query = "DELETE FROM #{table_name} WHERE id = $1"
-    Ecto.Adapters.SQL.query!(Repo, query, [id])
-    
-    {:noreply, table_name}
+
+    case Ecto.Adapters.SQL.query(Repo, query, [id]) do
+      {:ok, _result} -> {:noreply, table_name}
+      {:error, reason} ->
+        Logger.error("Erro ao executar query delete: #{inspect(reason)}")
+        {:noreply, table_name}
+    end
   end
 
   defp format_result(%{columns: columns, rows: rows}) do
@@ -77,4 +97,17 @@ defmodule InventoryService.DatabaseWorker do
       Enum.zip(column_atoms, row) |> Map.new()
     end)
   end
+
+  defp transform_row(row) do
+  %{
+    id: Enum.at(row, 0),
+    product_name: Enum.at(row, 1),
+    quantity: Enum.at(row, 2),
+    purchase_price: Decimal.to_float(Enum.at(row, 3)),
+    sale_price: Decimal.to_float(Enum.at(row, 4)),     
+    expiration_date: Enum.at(row, 5),                  
+    inserted_at: Enum.at(row, 6),                      
+    updated_at: Enum.at(row, 7)                        
+  }
+end
 end

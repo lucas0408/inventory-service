@@ -17,7 +17,7 @@ defmodule InventoryService.RabbitMQConsume do
     try do
       case Jason.decode(payload) do
         {:ok, message} ->
-          InventoryService.Cache.decide_server_pid(Map.put(message, "meta", meta))
+          InventoryService.Cache.async_call_square_root(Map.put(message, "meta", meta))
           Basic.ack(chan, meta.delivery_tag)
         {:error, error} ->
           IO.inspect(error, label: "JSON decode error")
@@ -34,6 +34,11 @@ defmodule InventoryService.RabbitMQConsume do
 
   # Confirmation sent by the broker after registering this process as a consumer
   def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, chan) do
+    {:noreply, chan}
+  end
+
+  def handle_info(message, chan) do
+    IO.inspect(message, label: "Unhandled message")
     {:noreply, chan}
   end
 

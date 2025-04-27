@@ -2,8 +2,7 @@ defmodule Stock.Repo.Migrations.CreateStock do
   use Ecto.Migration
 
   def change do
-    create table(:stocks, primary_key: false) do
-      add :id, :integer, primary_key: true
+    create table(:stocks) do
       add :product_name, :string
       add :quantity, :integer
       add :purchase_price, :decimal

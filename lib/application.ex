@@ -1,13 +1,22 @@
 defmodule InventoryService.Application do
   use Application
 
+  defp poolboy_config do
+    [
+      name: {:local, :worker_stock},
+      worker_module: InventoryService.Stock,
+      size: 10,
+      max_overflow: 10
+    ]
+  end
+
   @impl true
   def start(_type, _args) do
     children = [
       InventoryService.Repo,
       {InventoryService.Database, "stocks"},
-      {InventoryService.Cache, []},
-      {InventoryService.RabbitMQConfig, []}
+      {InventoryService.RabbitMQConfig, []},
+      :poolboy.child_spec(:worker_stock, poolboy_config())
     ]
 
     opts = [strategy: :one_for_one, name: InventoryService.Supervisor]
