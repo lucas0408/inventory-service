@@ -11,7 +11,6 @@ defmodule InventoryService.RabbitMQConsume do
       IO.inspect("oii")
       {:ok, chan}
   end
-
   @impl true
   def handle_info({:basic_deliver, payload, meta}, chan) do
     try do
@@ -33,7 +32,7 @@ defmodule InventoryService.RabbitMQConsume do
   end
 
   # Confirmation sent by the broker after registering this process as a consumer
-  def handle_info({:basic_consume_ok, %{consumer_tag: _consumer_tag}}, chan) do
+  def handle_info({:basic_consume_ok, %{consumer_tag: consumer_tag}}, chan) do
     {:noreply, chan}
   end
 

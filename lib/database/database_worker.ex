@@ -2,28 +2,28 @@ defmodule InventoryService.DatabaseWorker do
   use GenServer
   alias InventoryService.Repo
 
-  def start(table_name) do
-    GenServer.start(__MODULE__, table_name)
+  def start(worker_id) do
+    GenServer.start(__MODULE__, table_name, name: via_tuple(worker_id))
   end
 
-  def get_all(worker_pid, meta) do
-    GenServer.cast(worker_pid, {:get_all, meta})
+  def via_tuple(worker_id) do
+    {:via, Inventory., {:database_worker, worker_id}}
   end
 
-  def get_product(worker_pid, id) do
-    GenServer.call(worker_pid, {:get_product, id})
+  def get_all(worker_pid) do
+    GenServer.call(via_tuple(worker_id), {:get_all})
   end
 
-  def update(worker_pid, update_product, product_id, meta) do
-    GenServer.cast(worker_pid, {:update, update_product, product_id, meta})
+  def update(worker_pid, update_product, product_id) do
+    GenServer.cast(via_tuple(worker_id), {:update, update_product, product_id})
   end
 
-  def create(worker_pid, product, meta) do
-    GenServer.cast(worker_pid, {:create, product, meta})
+  def create(worker_pid, product) do
+    GenServer.cast(via_tuple(worker_id), {:create, product})
   end
 
-  def delete(worker_pid, id, meta) do
-    GenServer.cast(worker_pid, {:delete, id, meta})
+  def delete(worker_pid, id) do
+    GenServer.cast(via_tuple(worker_id), {:delete, id})
   end
 
   @impl GenServer
@@ -61,7 +61,6 @@ defmodule InventoryService.DatabaseWorker do
 
   @impl GenServer
   def handle_cast({:create, product, meta}, table_name) do
-  
     columns = Map.keys(product) |> Enum.join(", ")
     placeholders = 1..map_size(product) |> Enum.map(&"$#{&1}") |> Enum.join(", ")
     values = Map.values(product)
@@ -123,5 +122,5 @@ defmodule InventoryService.DatabaseWorker do
     sale_price: Decimal.to_float(Enum.at(row, 4)),     
     expiration_date: Enum.at(row, 5)                 
   }
-end
+  end
 end
