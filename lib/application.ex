@@ -19,6 +19,7 @@ defmodule InventoryService.Application do
       InventoryService.Repo,
       {InventoryService.Database, "stocks"},
       {InventoryService.RabbitMQConfig, []},
+      {InventoryService.ProcessRegistry, []},
       :poolboy.child_spec(:worker_stock, poolboy_config())
     ]
 
