@@ -2,24 +2,28 @@ defmodule InventoryService.DatabaseWorker do
   use GenServer
   alias InventoryService.Repo
 
-  def start(table_name) do
-    GenServer.start(__MODULE__, table_name)
+  def start(worker_id) do
+    GenServer.start(__MODULE__, table_name, name: via_tuple(worker_id))
+  end
+
+  def via_tuple(worker_id) do
+    {:via, Inventory., {:database_worker, worker_id}}
   end
 
   def get_all(worker_pid) do
-    GenServer.call(worker_pid, {:get_all})
+    GenServer.call(via_tuple(worker_id), {:get_all})
   end
 
   def update(worker_pid, update_product, product_id) do
-    GenServer.cast(worker_pid, {:update, update_product, product_id})
+    GenServer.cast(via_tuple(worker_id), {:update, update_product, product_id})
   end
 
   def create(worker_pid, product) do
-    GenServer.cast(worker_pid, {:create, product})
+    GenServer.cast(via_tuple(worker_id), {:create, product})
   end
 
   def delete(worker_pid, id) do
-    GenServer.cast(worker_pid, {:delete, id})
+    GenServer.cast(via_tuple(worker_id), {:delete, id})
   end
 
   @impl GenServer
