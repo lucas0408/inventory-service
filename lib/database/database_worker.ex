@@ -7,7 +7,7 @@ defmodule InventoryService.DatabaseWorker do
   end
 
   def via_tuple(worker_id) do
-    {:via, Inventory., {:database_worker, worker_id}}
+    {:via, Inventory.PoolSupervisor, {:database_worker, worker_id}}
   end
 
   def get_all(worker_pid) do
