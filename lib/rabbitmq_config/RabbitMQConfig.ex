@@ -1,5 +1,4 @@
 defmodule InventoryService.RabbitMQConfig do
-  use GenServer
   use AMQP
 
   @exchange    "default"
@@ -14,12 +13,6 @@ defmodule InventoryService.RabbitMQConfig do
                 ]
 
   def start_link(_opts) do
-    GenServer.start_link(__MODULE__, [], name: __MODULE__)
-  end
-
-  @impl true
-  def init(_opts) do
-
     {:ok, conn} = Connection.open(@options)
     
     {:ok, chan} = Channel.open(conn)
