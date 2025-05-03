@@ -6,7 +6,10 @@ defmodule InventoryService.Application do
       name: {:local, :worker_stock},
       worker_module: InventoryService.Stock,
       size: 10,
-      max_overflow: 10
+      max_overflow: 10,
+      worker_restart_strategy: :one_for_one,
+      max_restart_intensity: 3,
+      max_restart_period: 5
     ]
   end
 

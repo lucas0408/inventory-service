@@ -10,18 +10,15 @@ defmodule InventoryService.Cache do
             try do
                 case message["process"] do
                     "update" ->
-                        InventoryService.Stock.update_product(pid, message["product_id"], message["update_product"])
-                    
+                        InventoryService.Stock.update_product(pid, message)
                     "delete" ->
-                        InventoryService.Stock.delete_product(pid, message["product_id"])
-                    
+                        InventoryService.Stock.delete_product(pid, message)
                     "add" ->
-                        InventoryService.Stock.add_product(pid, message["product"])
-                    
+                        InventoryService.Stock.add_product(pid, message)
                     "buy_product" ->
-                        InventoryService.Stock.buy_product(pid, message["product_id"], message["quantity"])
+                        InventoryService.Stock.buy_product(pid, message)
                     "get_all" ->
-                        InventoryService.Stock.get_all(pid, message["product_id"])
+                        InventoryService.Stock.get_all(pid, message)
                 end
             catch
                 e, r -> IO.inspect("poolboy transaction caught error: #{inspect(e)}, #{inspect(r)}")

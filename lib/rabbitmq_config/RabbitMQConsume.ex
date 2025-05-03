@@ -38,7 +38,6 @@ defmodule InventoryService.RabbitMQConsume do
   end
 
   def handle_info(message, chan) do
-    IO.inspect(message, label: "Unhandled message")
     {:noreply, chan}
   end
 

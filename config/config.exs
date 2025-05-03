@@ -1,6 +1,7 @@
 import Config
 
 config :inventory_service, InventoryService.Repo,
+  pool_size: 10,
   adapter: Ecto.Adapters.Postgres,
   database: "postgres",
   username: "postgres",
