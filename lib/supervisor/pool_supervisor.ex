@@ -1,10 +1,8 @@
 defmodule InventoryService.PoolSupervisor do
   use Supervisor
-  @db_folder "stocks"
-  @pool_size 10
 
-  def start_link do
-    Supervisor.start_link(__MODULE__, {@db_folder, @pool_size})
+  def start_link(db_folder, pool_size) do
+    Supervisor.start_link(__MODULE__, {db_folder, pool_size})
   end
 
   def init(db_folder, pool_size) do
