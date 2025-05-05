@@ -1,4 +1,5 @@
 defmodule InventoryService.RabbitMQConfig do
+  use GenServer
   use AMQP
 
   @exchange    "default"

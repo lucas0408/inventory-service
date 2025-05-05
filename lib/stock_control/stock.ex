@@ -21,7 +21,6 @@ defmodule InventoryService.Stock do
   end
 
   def get_all(pid, message) do
-    IO.inspect(pid)
     GenServer.cast(pid, {:get_all, message})
   end
 

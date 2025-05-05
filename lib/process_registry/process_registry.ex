@@ -1,8 +1,9 @@
 defmodule InventoryService.ProcessRegistry do
+  import Kernel, except: [send: 2]
   use GenServer
 
-  def start_link do
-    GenServer.start_link(__MODULE__, nil, :process_registry)
+  def start_link(_) do
+    GenServer.start_link(__MODULE__, nil, name: :process_registry)
   end
 
   def send(key, message) do
@@ -30,15 +31,15 @@ defmodule InventoryService.ProcessRegistry do
     {:ok, %{}}
   end
 
-  def handle_call({:unregister_name, key}, process_registry) do
+  def handle_call({:unregister_name, key}, _from, process_registry) do
     {:reply, key, Map.delete(process_registry, key)}
   end
 
-  def handle_call({:whereis_name, key}, process_registry) do
-    {:reply, Map.get(process_registry, key), process_registry}
+  def handle_call({:whereis_name, key}, _from, process_registry) do
+    {:reply, Map.get(process_registry, key, :undefined), process_registry}
   end
 
-  def handle_call({:register_name, key, pid}, process_registry) do
+  def handle_call({:register_name, key, pid}, _from, process_registry) do
     case Map.get(process_registry, key) do
       nil ->
         Process.monitor(pid)

@@ -17,9 +17,9 @@ defmodule InventoryService.Application do
   def start(_type, _args) do
     children = [
       InventoryService.Repo,
-      supervisor(InventoryService.Database, "stocks"),
-      {InventoryService.RabbitMQConfig, []},
       {InventoryService.ProcessRegistry, []},
+      {InventoryService.Database, "stocks"},
+      {InventoryService.RabbitMQConfig, []},
       :poolboy.child_spec(:worker_stock, poolboy_config())
     ]
 

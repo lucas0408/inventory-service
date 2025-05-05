@@ -6,7 +6,10 @@ config :inventory_service, InventoryService.Repo,
   database: "postgres",
   username: "postgres",
   password: "inventory_postgres",
-  hostname: "localhost",
-  port: 5433
+  hostname: "127.0.0.1", 
+  show_sensitive_data_on_connection_error: true,
+  port: 5433,
+  pool_timeout: 15000,    
+  connect_timeout: 15000 
 
 config :inventory_service, ecto_repos: [InventoryService.Repo]
