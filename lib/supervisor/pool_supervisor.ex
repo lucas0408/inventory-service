@@ -6,7 +6,7 @@ defmodule InventoryService.PoolSupervisor do
   end
 
   def init({db_folder, pool_size}) do
-  
+		IO.inspect("init database workers")
     children = for worker_id <- 1..pool_size do
       %{
         id: worker_id,

@@ -6,14 +6,24 @@ defmodule InventoryService.RabbitSupervisor do
 
   def init(chan) do
     processes = [
-      worker(
-        InventoryService.RabbitMQConsume, [chan]
-      ),
-      worker(
-        InventoryService.RabbitMQProducer, [chan]
-      )
+      %{
+        id: InventoryService.RabbitMQConsume,
+        start: {InventoryService.RabbitMQConsume, :start_link, [chan]},
+        restart: :permanent,
+        shutdown: 5000,
+        type: :worker,
+        modules: [InventoryService.RabbitMQConsume]
+      },
+      %{
+        id: InventoryService.RabbitMQProducer,
+        start: {InventoryService.RabbitMQProducer, :start_link, [chan]},
+        restart: :permanent,
+        shutdown: 5000,
+        type: :worker,
+        modules: [InventoryService.RabbitMQProducer]
+      }
     ]
 
-    supervise(processes, strategy: :one_for_one)
+    Supervisor.init(processes, strategy: :one_for_one)
   end
 end

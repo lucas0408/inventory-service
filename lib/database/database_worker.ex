@@ -6,24 +6,24 @@ defmodule InventoryService.DatabaseWorker do
     GenServer.start_link(__MODULE__, table_name, name: via_tuple(worker_id))
   end
 
-  def via_tuple(worker_id, meta) do
+  def via_tuple(worker_id) do
     {:via, InventoryService.ProcessRegistry, {:database_worker, worker_id}}
   end
 
   def get_all(worker_id, meta) do
-    GenServer.call(via_tuple(worker_id), {:get_all})
+    GenServer.cast(via_tuple(worker_id), {:get_all, meta})
   end
 
   def update(worker_id, update_product, product_id, meta) do
-    GenServer.cast(via_tuple(worker_id), {:update, update_product, product_id})
+    GenServer.cast(via_tuple(worker_id), {:update, update_product, product_id, meta})
   end
 
   def create(worker_id, product, meta) do
-    GenServer.cast(via_tuple(worker_id), {:create, product})
+    GenServer.cast(via_tuple(worker_id), {:create, product, meta})
   end
 
   def delete(worker_id, id, meta) do
-    GenServer.cast(via_tuple(worker_id), {:delete, id})
+    GenServer.cast(via_tuple(worker_id), {:delete, id, meta})
   end
 
   @impl GenServer

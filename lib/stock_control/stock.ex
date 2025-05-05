@@ -78,12 +78,9 @@ defmodule InventoryService.Stock do
   def handle_cast({:buy_product, message}, stock) do
     product = hd(InventoryService.Database.get_product(message["product_id"]))
     if product.quantity - message["quantity"] < 0 or message["quantity"] < 0 do
-      IO.inspect("mensagem inválida")
       {:noreply, stock}
     else
       update_product = Map.put(product, :quantity, product.quantity - message["quantity"])
-
-      IO.inspect(update_product)
 
       InventoryService.Database.update(update_product, message["product_id"], message["meta"])
       {:noreply, stock}

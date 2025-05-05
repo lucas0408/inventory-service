@@ -28,6 +28,7 @@ defmodule InventoryService.ProcessRegistry do
   end
 
   def init(_) do
+    IO.inspect("init process registry")
     {:ok, %{}}
   end
 
