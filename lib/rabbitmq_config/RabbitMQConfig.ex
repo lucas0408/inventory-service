@@ -12,7 +12,12 @@ defmodule InventoryService.RabbitMQConfig do
                   password: "6V2cHoCicOdizdhzkSSmb7jVLQ2VEW72"
                 ]
 
-  def start_link(_opts) do
+  def start_link do
+    GenServer.start_link(__MODULE__, nil, name: :rabbit_config)
+  end
+
+  def init(_) do
+    IO.inspect("init rabbit config")
     {:ok, conn} = Connection.open(@options)
     
     {:ok, chan} = Channel.open(conn)
@@ -23,12 +28,17 @@ defmodule InventoryService.RabbitMQConfig do
     #declara uma fila, com o nome e sua persistencia
     {:ok, _} = Queue.declare(chan, @queue, durable: true)
 
-    IO.inspect("ola")
-
     #Binda a fila com o exchange
     :ok = Queue.bind(chan, @queue, @exchange)
 
     InventoryService.RabbitSupervisor.start_link(chan)
 
+    {:ok, %{conn: conn, chan: chan}}
+  end
+
+  def terminate(_reason, %{conn: conn} = _state) do
+    IO.inspect("Fechando conexão com RabbitMQ...")
+    Connection.close(conn)
+    :ok
   end
 end
