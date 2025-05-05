@@ -2,15 +2,21 @@ defmodule InventoryService.RabbitMQConsume do
   use GenServer
   use AMQP
 
+  @queue       "default.product"
+
   def start_link(chan) do
-      GenServer.start(__MODULE__, chan, name: __MODULE__)
+    GenServer.start(__MODULE__, chan, name: __MODULE__)
   end
 
   @impl GenServer
   def init(chan) do
-      IO.inspect("oii")
-      {:ok, chan}
+    #Registra um processo consumidor da fila, caso não
+    #seja passado o consumer_pid no final, por padrão ele pegara o pid do processo atual
+    Basic.consume(chan, @queue, self())
+    IO.inspect("iniciando RabbitMQCOnsumer")
+    {:ok, chan}
   end
+
   @impl true
   def handle_info({:basic_deliver, payload, meta}, chan) do
     try do

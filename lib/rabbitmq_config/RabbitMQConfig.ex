@@ -4,7 +4,6 @@ defmodule InventoryService.RabbitMQConfig do
 
   @exchange    "default"
   @queue       "default.product"
-  @queue       "default.product"
   @options      [
                   host: "kebnekaise.lmq.cloudamqp.com",
                   port: 5672, 
@@ -24,17 +23,12 @@ defmodule InventoryService.RabbitMQConfig do
     #declara uma fila, com o nome e sua persistencia
     {:ok, _} = Queue.declare(chan, @queue, durable: true)
 
-    {:ok, consumer_pid} = InventoryService.RabbitMQConsume.start_link(chan)
-
-    {:ok, _producer_pid} = InventoryService.RabbitMQProducer.start_link(chan)
+    IO.inspect("ola")
 
     #Binda a fila com o exchange
     :ok = Queue.bind(chan, @queue, @exchange)
 
-    #Registra um processo consumidor da fila, caso não
-    #seja passado o consumer_pid no final, por padrão ele pegara o pid do processo atual
-    {:ok, _consumer_tag} = Basic.consume(chan, @queue, consumer_pid)
+    InventoryService.RabbitSupervisor.start_link(chan)
 
-    {:ok, chan}
   end
 end
