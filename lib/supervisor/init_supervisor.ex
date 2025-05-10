@@ -20,22 +20,14 @@ defmodule InventoryService.InitSupervisor do
   def init(_) do
   
     children = [
-        %{
+      %{
           id: InventoryService.Database,
           start: {InventoryService.Database, :start_link, ["stocks"]},
           restart: :permanent,
           shutdown: 5000,
           type: :supervisor,
           modules: [InventoryService.DatabaseWorker]
-        },
-        %{
-          id: InventoryService.RabbitMQConfig,
-          start: {InventoryService.RabbitMQConfig, :start_link, []},
-          restart: :permanent,
-          shutdown: 5000,
-          type: :supervisor,
-          modules: [InventoryService.RabbitMQConfig]
-        },
+      },
       :poolboy.child_spec(:worker_stock, poolboy_config())
     ]
     

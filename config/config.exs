@@ -8,7 +8,7 @@ config :inventory_service, InventoryService.Repo,
   password: "inventory_postgres",
   hostname: "127.0.0.1", 
   show_sensitive_data_on_connection_error: true,
-  port: 5433,
+  port: 5432,
   pool_timeout: 15000,    
   connect_timeout: 15000 
 
